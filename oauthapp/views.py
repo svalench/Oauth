@@ -15,6 +15,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from Oauth import settings
+from oauthapp.const import TOKEN_ENCODE_ALGORITM, TOKEN_TIME_LIFE
 from oauthapp.models import Client, ClientsCodes
 from oauthapp.utils import generate_jwt_token
 
@@ -43,7 +44,7 @@ def auth(request):
 def tokenauth(request):
     code_post = request.POST.get('code')
     cl_code = ClientsCodes.objects.filter(token=code_post).first()
-    decode_code = jwt.decode(code_post, settings.SECRET_KEY, algorithms=[settings.TOKEN_ENCODE_ALGORITM])
+    decode_code = jwt.decode(code_post, settings.SECRET_KEY, algorithms=[TOKEN_ENCODE_ALGORITM])
     userid = cl_code.user.id
     utc = pytz.UTC
     if not cl_code or cl_code.date_add > (datetime.datetime.now() - datetime.timedelta(minutes=10)).replace(tzinfo=utc):
@@ -53,8 +54,8 @@ def tokenauth(request):
     context = {
         "access_token": generate_jwt_token(cl_code.user),
         "token_type": "bearer",
-        "refresh_token": jwt.encode({"id": userid, 'client': cl_code.id}, settings.SECRET_KEY, algorithm=settings.TOKEN_ENCODE_ALGORITM),
-        "expires_in": settings.TOKEN_TIME_LIFE,
+        "refresh_token": jwt.encode({"id": userid, 'client': cl_code.id}, settings.SECRET_KEY, algorithm=TOKEN_ENCODE_ALGORITM),
+        "expires_in": TOKEN_TIME_LIFE,
         "created_at": time.time()
     }
     return JsonResponse(context)

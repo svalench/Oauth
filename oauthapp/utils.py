@@ -6,6 +6,8 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from rest_framework import authentication, exceptions
 
+from oauthapp.const import TOKEN_ENCODE_ALGORITM, TOKEN_TIME_LIFE
+
 
 class JWTAuthentication(authentication.BaseAuthentication):
     authentication_header_prefix = 'bearer'
@@ -66,7 +68,7 @@ class JWTAuthentication(authentication.BaseAuthentication):
         вернуть пользователя и токен, иначе - сгенерировать исключение.
         """
         try:
-            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.TOKEN_ENCODE_ALGORITM])
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[TOKEN_ENCODE_ALGORITM])
         except Exception as e:
             print(e)
             msg = 'Ошибка аутентификации. Невозможно декодировать токен!'
@@ -92,10 +94,10 @@ def generate_jwt_token(user):
     Генерирует веб-токен JSON, в котором хранится идентификатор этого
     пользователя, срок действия токена составляет 1 день от создания
     """
-    dt = time.time() + settings.TOKEN_TIME_LIFE
+    dt = time.time() + TOKEN_TIME_LIFE
     token = jwt.encode({
         'id': user.pk,
         'exp': int(dt)
-    }, settings.SECRET_KEY, algorithm=settings.TOKEN_ENCODE_ALGORITM)
+    }, settings.SECRET_KEY, algorithm=TOKEN_ENCODE_ALGORITM)
 
     return token
